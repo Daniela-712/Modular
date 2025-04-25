@@ -1185,14 +1185,6 @@ class SistemaMonitoreoInsumos:
                 if insumo:
                     insumo["estado"] = "Entregado"
         
-     
-            "fecha": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "ruta": ruta_id,
-            "receptor": receptor,
-            "comentarios": comentarios,
-            "chofer": self.usuario_actual
-        }
-        
         self.historial.append({
             "fecha": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "accion": "Confirmación de entrega",
