@@ -1,1 +1,405 @@
+actualizado admin view
+import tkinter as tk
+from tkinter import ttk, messagebox
+from tkinter.font import Font
 
+class AdminView:
+    def __init__(self, root, usuario, callback_dashboard, callback_nueva_ruta, callback_nueva_alerta, callback_nuevo_insumo, callback_historial):
+        self.root = root
+        self.usuario = usuario
+        self.callback_dashboard = callback_dashboard
+        self.callback_nueva_ruta = callback_nueva_ruta
+        self.callback_nueva_alerta = callback_nueva_alerta
+        self.callback_nuevo_insumo = callback_nuevo_insumo
+        self.callback_historial = callback_historial
+
+        
+        self._configurar_estilos()
+        self._configurar_ui()
+
+    def _configurar_estilos(self):
+        self.style = ttk.Style()
+        self.style.theme_use('clam')
+        
+       
+        self.color_primario = "#2c3e50"
+        self.color_secundario = "#34495e"
+        self.color_terciario = "#3498db"
+        self.color_texto = "#ecf0f1"
+        self.color_fondo = "#f5f6fa"
+        self.color_exito = "#2ecc71"
+        self.color_alerta = "#e74c3c"
+        self.color_borde = "#dcdde1"
+        
+       
+        self.style.configure('TFrame', background=self.color_fondo)
+        self.style.configure('TLabel', background=self.color_fondo, foreground=self.color_primario, font=('Arial', 10))
+        self.style.configure('TButton', 
+                           background=self.color_terciario, 
+                           foreground=self.color_texto,
+                           borderwidth=0,
+                           font=('Arial', 10, 'bold'),
+                           padding=6)
+        self.style.map('TButton',
+                      background=[('active', self.color_secundario)],
+                      foreground=[('active', self.color_texto)])
+        
+        self.style.configure('TEntry', fieldbackground='white', bordercolor=self.color_borde)
+        self.style.configure('TCombobox', fieldbackground='white', bordercolor=self.color_borde)
+
+    def _configurar_ui(self):
+        self.root.title("Panel de Administrador")
+        self.root.geometry("1200x800")
+        self.root.configure(bg=self.color_fondo)
+        
+        
+        barra = tk.Frame(self.root, bg=self.color_primario, width=220)
+        barra.pack(side=tk.LEFT, fill=tk.Y)
+        barra.pack_propagate(False)
+        
+       
+        user_frame = tk.Frame(barra, bg=self.color_primario)
+        user_frame.pack(pady=20, padx=10, fill=tk.X)
+        
+        tk.Label(user_frame, 
+                text=f"Bienvenido,\n{self.usuario}", 
+                bg=self.color_primario, 
+                fg=self.color_texto,
+                font=('Arial', 12, 'bold'),
+                justify=tk.LEFT).pack(anchor=tk.W)
+        
+        
+        ttk.Separator(barra, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=10, padx=5)
+        
+        
+        categorias = [
+            ("GENERAL", [
+                ("Dashboard", "📊", self.callback_dashboard)
+            ]),
+            ("RUTAS Y TRANSPORTE", [
+                ("Nueva Ruta", "🛣️", self._form_ruta)
+            ]),
+            ("ALERTAS Y NOTIFICACIONES", [
+                ("Nueva Alerta", "⚠️", self._form_alerta)
+            ]),
+            ("DATOS", [
+                ("Nuevo Insumo", "📦", self._form_insumo)
+            ]),
+            ("HISTORIAL Y REPORTES", [
+                ("Historial", "📋", self.callback_historial)
+            ])
+        ]
+        
+        for categoria, opciones in categorias:
+            cat_frame = tk.Frame(barra, bg=self.color_primario)
+            cat_frame.pack(fill=tk.X, pady=(15, 5), padx=10)
+            
+            tk.Label(cat_frame, 
+                    text=categoria, 
+                    bg=self.color_primario, 
+                    fg=self.color_texto,
+                    font=('Arial', 11, 'bold'),
+                    anchor=tk.W).pack(fill=tk.X)
+            
+           
+            for texto, icono, accion in opciones:
+                btn = tk.Button(barra, 
+                               text=f" {icono}  {texto}", 
+                               command=accion, 
+                               bg=self.color_primario, 
+                               fg=self.color_texto,
+                               font=('Arial', 11),
+                               anchor=tk.W,
+                               bd=0,
+                               padx=25,
+                               activebackground=self.color_secundario,
+                               activeforeground=self.color_texto)
+                btn.pack(fill=tk.X, pady=2, ipady=8)
+            
+            
+            ttk.Separator(barra, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=5, padx=10)
+        
+        
+        btn_cerrar = tk.Button(barra, 
+                             text="Cerrar sesión", 
+                             command=self.root.quit,
+                             bg=self.color_primario, 
+                             fg=self.color_texto,
+                             font=('Arial', 10),
+                             anchor=tk.W,
+                             bd=0,
+                             padx=20,
+                             activebackground=self.color_alerta,
+                             activeforeground=self.color_texto)
+        btn_cerrar.pack(fill=tk.X, pady=(20, 10), ipady=8)
+        
+        #
+        self.contenido = tk.Frame(self.root, bg=self.color_fondo)
+        self.contenido.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
+        
+        self.seccion_superior = tk.Frame(self.contenido, bg=self.color_fondo, height=250)
+        self.seccion_superior.pack(fill=tk.X, pady=(0, 20))
+        
+        
+        self.seccion_principal = tk.Frame(self.contenido, bg=self.color_fondo)
+        self.seccion_principal.pack(fill=tk.BOTH, expand=True)
+
+    def limpiar(self):
+        for widget in self.seccion_principal.winfo_children():
+            widget.destroy()
+
+    def mostrar_dashboard(self, resumen):
+        self.limpiar()
+        
+       
+        for widget in self.seccion_superior.winfo_children():
+            widget.destroy()
+        
+     
+        titulo = tk.Label(self.seccion_principal, 
+                         text="Resumen General", 
+                         font=('Arial', 16, 'bold'),
+                         bg=self.color_fondo,
+                         fg=self.color_primario)
+        titulo.pack(pady=(0, 20), anchor=tk.W)
+        
+       
+        frame_resumen = tk.Frame(self.seccion_superior, bg=self.color_fondo)
+        frame_resumen.pack(fill=tk.BOTH, expand=True)
+        
+        for i, (clave, valor) in enumerate(resumen.items()):
+            card = tk.Frame(frame_resumen, 
+                          bg='white', 
+                          bd=1, 
+                          relief=tk.RAISED,
+                          padx=20,
+                          pady=15)
+            card.grid(row=0, column=i, padx=10, sticky='nsew')
+            frame_resumen.columnconfigure(i, weight=1)
+            
+            tk.Label(card, 
+                   text=clave.capitalize(), 
+                   bg='white',
+                   font=('Arial', 10),
+                   fg=self.color_secundario).pack(anchor=tk.W)
+            
+            tk.Label(card, 
+                   text=str(valor), 
+                   bg='white',
+                   font=('Arial', 18, 'bold'),
+                   fg=self.color_primario).pack(anchor=tk.W)
+        
+        
+        graficas_frame = tk.Frame(self.seccion_principal, bg='white', height=300)
+        graficas_frame.pack(fill=tk.BOTH, expand=True, pady=10)
+        
+        tk.Label(graficas_frame, 
+                text=" ", 
+                bg='white',
+                fg=self.color_secundario).pack(expand=True)
+
+    def _form_ruta(self):
+        self.limpiar()
+        
+        
+        titulo = tk.Label(self.seccion_principal, 
+                         text="Nueva Ruta", 
+                         font=('Arial', 16, 'bold'),
+                         bg=self.color_fondo,
+                         fg=self.color_primario)
+        titulo.pack(pady=(0, 20), anchor=tk.W)
+        
+        
+        form_container = tk.Frame(self.seccion_principal, 
+                                bg='white',
+                                bd=1,
+                                relief=tk.SOLID,
+                                padx=20,
+                                pady=20)
+        form_container.pack(fill=tk.X)
+        
+        campos = ["Origen", "Destino", "Chofer", "Fecha"]
+        entradas = []
+        
+        for i, campo in enumerate(campos):
+            frame_campo = tk.Frame(form_container, bg='white')
+            frame_campo.grid(row=i, column=0, sticky=tk.W, pady=8)
+            
+            tk.Label(frame_campo, 
+                   text=campo, 
+                   bg='white',
+                   font=('Arial', 11),
+                   width=10,
+                   anchor=tk.W).pack(side=tk.LEFT, padx=5)
+            
+            entry = ttk.Entry(frame_campo, font=('Arial', 11))
+            entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+            entradas.append(entry)
+        
+        
+        btn_frame = tk.Frame(self.seccion_principal, bg=self.color_fondo)
+        btn_frame.pack(pady=20)
+        
+        ttk.Button(btn_frame, 
+                  text="Guardar Ruta", 
+                  command=lambda: self.callback_nueva_ruta(*[e.get() for e in entradas]),
+                  style='TButton').pack(pady=10, ipadx=20, ipady=5)
+
+    def _form_alerta(self):
+        self.limpiar()
+        
+        
+        titulo = tk.Label(self.seccion_principal, 
+                         text="Nueva Alerta", 
+                         font=('Arial', 16, 'bold'),
+                         bg=self.color_fondo,
+                         fg=self.color_primario)
+        titulo.pack(pady=(0, 20), anchor=tk.W)
+        
+        
+        form_container = tk.Frame(self.seccion_principal, 
+                                bg='white',
+                                bd=1,
+                                relief=tk.SOLID,
+                                padx=20,
+                                pady=20)
+        form_container.pack(fill=tk.X)
+        
+        
+        tk.Label(form_container, 
+               text="Mensaje", 
+               bg='white',
+               font=('Arial', 11)).grid(row=0, column=0, sticky=tk.W, pady=5)
+        
+        entry_msg = ttk.Entry(form_container, font=('Arial', 11))
+        entry_msg.grid(row=1, column=0, sticky=tk.EW, pady=5)
+        
+       
+        tk.Label(form_container, 
+               text="Prioridad", 
+               bg='white',
+               font=('Arial', 11)).grid(row=2, column=0, sticky=tk.W, pady=(15,5))
+        
+        combo = ttk.Combobox(form_container, 
+                            values=["Baja", "Media", "Alta"],
+                            font=('Arial', 11))
+        combo.set("Media")
+        combo.grid(row=3, column=0, sticky=tk.EW, pady=5)
+        
+       
+        form_container.columnconfigure(0, weight=1)
+        
+       
+        btn_frame = tk.Frame(self.seccion_principal, bg=self.color_fondo)
+        btn_frame.pack(pady=20)
+        
+        ttk.Button(btn_frame, 
+                  text="Crear Alerta", 
+                  command=lambda: self.callback_nueva_alerta(entry_msg.get(), combo.get()),
+                  style='TButton').pack(pady=10, ipadx=20, ipady=5)
+
+    def _form_insumo(self):
+        self.limpiar()
+        
+        
+        titulo = tk.Label(self.seccion_principal, 
+                         text="Nuevo Insumo", 
+                         font=('Arial', 16, 'bold'),
+                         bg=self.color_fondo,
+                         fg=self.color_primario)
+        titulo.pack(pady=(0, 20), anchor=tk.W)
+        
+        
+        form_container = tk.Frame(self.seccion_principal, 
+                                bg='white',
+                                bd=1,
+                                relief=tk.SOLID,
+                                padx=20,
+                                pady=20)
+        form_container.pack(fill=tk.X)
+        
+        campos = ["Nombre", "Descripción", "Cantidad", "Ubicación", "Estado"]
+        entradas = []
+        
+        for i, campo in enumerate(campos):
+            frame_campo = tk.Frame(form_container, bg='white')
+            frame_campo.grid(row=i, column=0, sticky=tk.W, pady=8)
+            
+            tk.Label(frame_campo, 
+                   text=campo, 
+                   bg='white',
+                   font=('Arial', 11),
+                   width=12,
+                   anchor=tk.W).pack(side=tk.LEFT, padx=5)
+            
+            entry = ttk.Entry(frame_campo, font=('Arial', 11))
+            entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+            entradas.append(entry)
+        
+        
+        btn_frame = tk.Frame(self.seccion_principal, bg=self.color_fondo)
+        btn_frame.pack(pady=20)
+        
+        ttk.Button(btn_frame, 
+                  text="Guardar Insumo", 
+                  command=lambda: self.callback_nuevo_insumo(*[e.get() for e in entradas]),
+                  style='TButton').pack(pady=10, ipadx=20, ipady=5)
+
+    def mostrar_historial(self, registros):
+        self.limpiar()
+        
+        
+        titulo = tk.Label(self.seccion_principal, 
+                         text="Historial de Actividades", 
+                         font=('Arial', 16, 'bold'),
+                         bg=self.color_fondo,
+                         fg=self.color_primario)
+        titulo.pack(pady=(0, 20), anchor=tk.W)
+        
+        
+        table_container = tk.Frame(self.seccion_principal, 
+                                 bg='white',
+                                 bd=1,
+                                 relief=tk.SOLID)
+        table_container.pack(fill=tk.BOTH, expand=True)
+        
+        
+        headers = ["Fecha", "Acción", "Usuario"]
+        for col, header in enumerate(headers):
+            tk.Label(table_container, 
+                    text=header,
+                    bg=self.color_secundario,
+                    fg=self.color_texto,
+                    font=('Arial', 10, 'bold'),
+                    padx=10,
+                    pady=5).grid(row=0, column=col, sticky='ew')
+        
+       
+        for row, registro in enumerate(registros, start=1):
+            tk.Label(table_container, 
+                    text=registro['fecha'],
+                    bg='white',
+                    font=('Arial', 10),
+                    padx=10,
+                    pady=5).grid(row=row, column=0, sticky='w')
+            
+            tk.Label(table_container, 
+                    text=registro['accion'],
+                    bg='white',
+                    font=('Arial', 10),
+                    padx=10,
+                    pady=5).grid(row=row, column=1, sticky='w')
+            
+            tk.Label(table_container, 
+                    text=registro['usuario'],
+                    bg='white',
+                    font=('Arial', 10),
+                    padx=10,
+                    pady=5).grid(row=row, column=2, sticky='w')
+        
+       
+        for col in range(len(headers)):
+            table_container.columnconfigure(col, weight=1)
+
+    def mostrar_mensaje(self, texto):
+        messagebox.showinfo("Éxito", texto, icon='info')
